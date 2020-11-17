@@ -11,6 +11,8 @@ using erl_interface, built in pooling, unified/clean API, and an optional Plug.
 This package is regulary tested on multiple platforms (Debian, macOS, Fedora, Alpine, FreeBSD) to ensure it'll work fine
 in any environment.
 
+Majic depends on [`file`](https://github.com/file/file) mirror repository to provide an up-to-date magic database. The database is compiled when Majic is compiled.
+
 ## Installation
 
 The package can be installed by adding `majic` to your list of dependencies in `mix.exs`:

@@ -1,13 +1,13 @@
 defmodule Mix.Tasks.Compile.Majic do
   use Mix.Task.Compiler
-  @repo_path "deps/libfile"
+  @repo_path Path.join(Mix.Project.deps_path, "libfile")
   @magic_path Path.join(@repo_path, "/magic")
   @magdir Path.join(@magic_path, "/Magdir")
-  @build_path "_build/file"
+  @build_path Path.join(Mix.Project.build_path, "/majic")
   @build_magdir Path.join(@build_path, "/magic")
   @manifest Path.join(@build_path, "/majic.manifest")
   @patch_path "src/magic_patches"
-  @built_path "priv/magic.mgc"
+  @built_path Path.join(to_string(:code.priv_dir(:majic)), "/magic.mgc")
   @shortdoc "Updates and compiles majic's embedded magic database."
   @doc """
   Uses `libfile` dependency Magdir, applies patches from `#{@patch_path}`, and builds to `#{@built_path}`.
