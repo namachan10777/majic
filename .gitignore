@@ -10,3 +10,4 @@ erl_crash.dump
 /priv/libmagic_port
 /test/*.mgc
 core.*
+/priv/magic.mgc

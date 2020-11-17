@@ -90,9 +90,11 @@ void process_command(uint16_t len, byte *buf);
 void process_command_file(byte *buf, int index, ei_x_buff *result);
 void process_command_bytes(byte *buf, int index, ei_x_buff *result);
 void process_command_load(byte *buf, int index, ei_x_buff *result);
+void process_command_compile(byte *buf, int index, ei_x_buff *result);
 void process_file(char *path, ei_x_buff *result);
 void process_bytes(char *bytes, int size, ei_x_buff *result);
 void process_load(ei_x_buff *result, char *path);
+void process_compile(ei_x_buff *result, char *path);
 void send_and_free(ei_x_buff *result);
 size_t read_cmd(byte *buf);
 size_t write_cmd(byte *buf, size_t len);
@@ -160,6 +162,10 @@ void process_command(uint16_t len, byte *buf) {
   // {:add_database, path}
   if (strlen(atom) == 12 && strcmp(atom, "add_database") == 0)
     return process_command_load(buf, index, &result);
+
+  // {:compile_database, path}
+  if (strlen(atom) == 16 && strcmp(atom, "compile_database") == 0)
+    return process_command_compile(buf, index, &result);
 
   // {:reload, _}
   if (strlen(atom) == 6 && strcmp(atom, "reload") == 0)
@@ -237,6 +243,24 @@ void process_command_load(byte *buf, int index, ei_x_buff *result) {
   error(result, "badarg");
 }
 
+void process_command_compile(byte *buf, int index, ei_x_buff *result) {
+  char path[4097];
+  int termtype, termsize;
+  ei_get_type(buf, &index, &termtype, &termsize);
+
+  if (termtype == ERL_BINARY_EXT) {
+    if (termsize > 4096)
+      return error(result, "enametoolong");
+
+    long bin_length;
+    EI_ENSURE(ei_decode_binary(buf, &index, path, &bin_length));
+    path[termsize] = '\0';
+    return process_compile(result, path);
+  }
+
+  error(result, "badarg");
+}
+
 void process_load(ei_x_buff *result, char *path) {
   if (magic_load_all(path) == 0) {
     EI_ENSURE(ei_x_encode_atom(result, "ok"));
@@ -244,6 +268,17 @@ void process_load(ei_x_buff *result, char *path) {
   } else {
     EI_ENSURE(ei_x_encode_atom(result, "error"));
     EI_ENSURE(ei_x_encode_atom(result, "not_loaded"));
+  }
+  send_and_free(result);
+}
+
+void process_compile(ei_x_buff *result, char *path) {
+  if (magic_compile(magic_mime_encoding, path) == 0) {
+    EI_ENSURE(ei_x_encode_atom(result, "ok"));
+    EI_ENSURE(ei_x_encode_atom(result, "compiled"));
+  } else {
+    EI_ENSURE(ei_x_encode_atom(result, "error"));
+    EI_ENSURE(ei_x_encode_atom(result, "compilation_failed"));
   }
   send_and_free(result);
 }

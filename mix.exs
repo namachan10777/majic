@@ -13,7 +13,7 @@ defmodule Majic.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       elixirc_options: [warnings_as_errors: warnings_as_errors(Mix.env())],
       start_permanent: Mix.env() == :prod,
-      compilers: [:elixir_make] ++ Mix.compilers(),
+      compilers: [:elixir_make] ++ Mix.compilers() ++ [:majic],
       make_env: make_env(),
       package: package(),
       deps: deps(),
@@ -49,13 +49,14 @@ defmodule Majic.MixProject do
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:elixir_make, "~> 0.6.1", runtime: false}
+      {:elixir_make, "~> 0.6.1", runtime: false},
+      {:libfile, github: "file/file", branch: "master", app: false, compile: false, sparse: "magic/"}
     ]
   end
 
   defp package do
     [
-      files: ~w(lib/gen_magic/* src/*.c Makefile),
+      files: ~w(lib/* src/* Makefile),
       licenses: ["Apache 2.0"],
       links: %{"GitHub" => "https://github.com/hrefhref/majic"},
       source_url: "https://github.com/hrefhref/majic"

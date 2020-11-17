@@ -55,7 +55,7 @@ defmodule Majic.Server do
           | {:startup_timeout, timeout()}
           | {:process_timeout, timeout()}
           | {:recycle_threshold, non_neg_integer() | :infinity}
-          | {:database_patterns, nonempty_list(:default | Path.t())}
+          | {:database_patterns, nonempty_list(:default | :system | Path.t())}
 
   @typedoc """
   Current state of the Server:
@@ -232,6 +232,7 @@ defmodule Majic.Server do
     databases =
       Enum.flat_map(List.wrap(data.database_patterns || @database_patterns), fn
         :default -> [:default]
+        :system -> [:system]
         pattern -> Path.wildcard(pattern)
       end)
 
@@ -254,9 +255,11 @@ defmodule Majic.Server do
 
   @doc false
   def loading(:state_timeout, :load, {[database | _databases], data} = state) do
+    priv_dir = to_string(:code.priv_dir(:majic))
     command =
       case database do
-        :default -> {:add_database, :default}
+        :default -> {:add_database, Path.join(priv_dir, "/magic.mgc")}
+        :system -> {:add_database, :default}
         path when is_binary(path) -> {:add_database, path}
       end
 

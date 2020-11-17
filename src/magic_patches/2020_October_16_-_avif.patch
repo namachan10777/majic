@@ -1,0 +1,22 @@
+Signed-off-by: Martin Reboredo <yakoyoku at gmail.com>
+---
+ magic/Magdir/animation | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/magic/Magdir/animation b/magic/Magdir/animation
+index 7f75cb8c..dd843ad2 100644
+--- a/magic/Magdir/animation
++++ b/magic/Magdir/animation
+@@ -219,6 +219,12 @@
+ !:mime image/heif-sequence
+ >8	string		avcs		\b, HEIF Image Sequence AVC
+ !:mime image/heif-sequence
++# AVIF image format
++# see https://aomediacodec.github.io/av1-avif/
++>8	string		avif		\b, AVIF Image
++!:mime image/avif
++>8	string		avis		\b, AVIF Image Sequence
++!:mime image/avif
+ 
+ >8	string		ROSS		\b, Ross Video
+ >8	string		sdv		\b, SD Memory Card Video
