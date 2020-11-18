@@ -55,13 +55,13 @@ defmodule Majic.Pool do
   end
 
   @impl NimblePool
-  def handle_checkout(:checkout, _from, server) do
-    {:ok, server, server}
+  def handle_checkout(:checkout, _from, server, pool) do
+    {:ok, server, server, pool}
   end
 
   @impl NimblePool
-  def handle_checkin(_, _, server) do
-    {:ok, server}
+  def handle_checkin(_, _, server, pool) do
+    {:ok, server, pool}
   end
 
   @impl NimblePool
