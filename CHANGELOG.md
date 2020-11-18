@@ -12,17 +12,19 @@ The format is based on [Keep a Changelog][1], and this project adheres to [Seman
 ## Added
 
 - Forked gen_magic.
-- Pool: `Majic.Pool`
-- Plug: `Majic.Plug`
-- Unified API: `Majic.perform/1,2,3`
+- Pool: `Majic.Pool`, using [nimble_pool](https://hex.pm/packages/nimble_pool).
+- Plug: `Majic.Plug`.
+- Unified API: `Majic.perform/1,2,3`.
+- Builds an up-to-date and patched magic database.
+- `Majic.compile/2`
+- `Majic.Server.reload/2,3`
+- `Majic.Server.recycle/2,3`
 
 ## Changed
 
-- C port now using erl_interface
+- Improved C port, now using erl_interface
 - Builds on Musl
 - Better error and timeout handling
-- `Majic.Server.reload/2,3`
-- `Majic.Server.recycle/2,3`
 - Bytes support: `Majic.Server.perform(ref, {:bytes, <<>>})`
 - Renamed `priv/apprentice` to `priv/libmagic_port` to be more obvious in `ps`
 - Renamed `Majic.Helpers.perform_once` to `Majic.Once.perform`
