@@ -11,7 +11,8 @@ using erl_interface, built in pooling, unified/clean API, and an optional Plug.
 This package is regulary tested on multiple platforms (Debian, macOS, Fedora, Alpine, FreeBSD) to ensure it'll work fine
 in any environment.
 
-Majic depends on [`file`](https://github.com/file/file) mirror repository to provide an up-to-date magic database. The database is compiled when Majic is compiled.
+Majic depends on [`file`](https://github.com/file/file) mirror repository to provide an up-to-date magic database. The database is compiled when Majic is compiled. We frequently update
+the database provided, and as well have additional temporary patches in `src/magic_patches/`.
 
 ## Installation
 

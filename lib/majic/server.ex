@@ -256,6 +256,7 @@ defmodule Majic.Server do
   @doc false
   def loading(:state_timeout, :load, {[database | _databases], data} = state) do
     priv_dir = to_string(:code.priv_dir(:majic))
+
     command =
       case database do
         :default -> {:add_database, Path.join(priv_dir, "/magic.mgc")}

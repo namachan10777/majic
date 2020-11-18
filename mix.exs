@@ -50,7 +50,8 @@ defmodule Majic.MixProject do
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:elixir_make, "~> 0.6.1", runtime: false},
-      {:libfile, github: "file/file", branch: "master", app: false, compile: false, sparse: "magic/"}
+      {:libfile,
+       github: "file/file", branch: "master", app: false, compile: false, sparse: "magic/"}
     ]
   end
 
@@ -74,12 +75,12 @@ defmodule Majic.MixProject do
   defp warnings_as_errors(_), do: true
 
   defp make_env() do
-    otp = :erlang.system_info(:otp_release)
-          |> to_string()
-          |> String.to_integer()
+    otp =
+      :erlang.system_info(:otp_release)
+      |> to_string()
+      |> String.to_integer()
 
     ei_incomplete = if(otp < 21.3, do: "YES", else: "NO")
     %{"EI_INCOMPLETE" => ei_incomplete}
   end
-
 end

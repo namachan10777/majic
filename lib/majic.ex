@@ -38,7 +38,15 @@ defmodule Majic do
 
   @doc "Compiles a `magic` file or a `Magdir` directory to a magic-compiled database (`.mgc`)"
   def compile(path, timeout \\ 5_000) do
-    port = Port.open(Majic.Config.get_port_name(), [:use_stdio, :binary, :exit_status, {:packet, 2}, {:args, []}])
+    port =
+      Port.open(Majic.Config.get_port_name(), [
+        :use_stdio,
+        :binary,
+        :exit_status,
+        {:packet, 2},
+        {:args, []}
+      ])
+
     compile(port, path, timeout)
   end
 
@@ -48,6 +56,7 @@ defmodule Majic do
         case :erlang.binary_to_term(data) do
           :ready ->
             send(port, {self(), {:command, :erlang.term_to_binary({:compile_database, path})}})
+
             receive do
               {^port, {:data, data}} ->
                 :erlang.binary_to_term(data)
@@ -55,14 +64,15 @@ defmodule Majic do
               timeout ->
                 {:error, :timeout}
             end
+
           result ->
             result
         end
-  after
-    timeout ->
-      {:error, :timeout}
+    after
+      timeout ->
+        {:error, :timeout}
+    end
   end
- end
 
   defp do_perform({Server = mod, name}, path, opts) do
     timeout = Keyword.get(opts, :timeout, Majic.Config.default_process_timeout())
