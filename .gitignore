@@ -11,3 +11,4 @@ erl_crash.dump
 /test/*.mgc
 core.*
 /priv/magic.mgc
+/priv/magic

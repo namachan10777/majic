@@ -1,18 +1,23 @@
 defmodule Mix.Tasks.Compile.Majic do
   use Mix.Task.Compiler
   @repo_path Path.join(Mix.Project.deps_path(), "libfile")
-  @magic_path Path.join(@repo_path, "/magic")
-  @magdir Path.join(@magic_path, "/Magdir")
   @build_path Path.join(Mix.Project.build_path(), "/majic")
-  @build_magdir Path.join(@build_path, "/magic")
   @manifest Path.join(Mix.Project.manifest_path(), "/compile.majic")
   @patch_path "src/magic_patches"
-  @built_path Path.join(to_string(:code.priv_dir(:majic)), "/magic.mgc")
+  @built_mgc_path Path.join(to_string(:code.priv_dir(:majic)), "/magic.mgc")
+  @built_magic_path Path.join(to_string(:code.priv_dir(:majic)), "/magic")
+
+  @magic_path Path.join(@repo_path, "/magic")
+  @magdir Path.join(@magic_path, "/Magdir")
+  @build_magdir Path.join(@build_path, "/magic")
   @shortdoc "Updates and compiles majic's embedded magic database."
   @moduledoc """
   Uses `libfile` dependency Magdir, applies patches from `#{@patch_path}`, and builds to `#{
-    @built_path
+    @built_mgc_path
   }`.
+
+  Unlike most Mix compile tasks, this task can be called at runtime from `Majic.Application` to ensure that the built-in
+  compiled magic database is working on the current system.
   """
 
   defmodule Manifest do
@@ -22,8 +27,9 @@ defmodule Mix.Tasks.Compile.Majic do
 
   @impl Mix.Task.Compiler
   def clean do
-    File.rm!(@built_path)
-    File.rm_rf!(@build_path)
+    File.rm(@built_mgc_path)
+    File.rm(@built_magic_path)
+    File.rm_rf(@build_path)
   end
 
   @impl Mix.Task.Compiler
@@ -38,17 +44,17 @@ defmodule Mix.Tasks.Compile.Majic do
     patches = list_patches()
     File.mkdir_p!(@build_magdir)
 
-    if sha == nil || sha != manifest.hash || patches != manifest.patches do
+    if !File.exists?(@built_mgc_path) || !File.exists?(@built_magic_path) || sha == nil ||
+         sha != manifest.hash || patches != manifest.patches do
       :ok = assemble_magdir()
       {:ok, patches, _err} = apply_patches()
+      :ok = assemble_magic(@built_magic_path)
       {:ok, _} = Majic.compile(@build_magdir)
-      File.cp!("magic.mgc", @built_path)
+      File.cp!("magic.mgc", @built_mgc_path)
       File.rm!("magic.mgc")
       manifest = %Manifest{hash: sha, patches: Enum.sort(patches)}
       File.write!(@manifest, :erlang.term_to_binary(manifest))
-      Mix.shell().info("Generated magic database")
-    else
-      Mix.shell().info("Magic database up-to-date")
+      Mix.shell().info("Majic: Generated magic database")
     end
 
     :ok
@@ -89,15 +95,15 @@ defmodule Mix.Tasks.Compile.Majic do
       |> Enum.map(fn patch ->
         path = Path.expand(Path.join(@patch_path, patch))
 
-      # We rewrite paths in patch because we're not applying the patch from repository root, but in a temporary
-      # build folder that is just the Magdir.
+        # We rewrite paths in patch because we're not applying the patch from repository root, but in a temporary
+        # build folder that is just the Magdir.
         case System.cmd("git", ["apply", "-p3", "--directory=magic/", path], cd: @build_path) do
           {_, 0} ->
-            Mix.shell().info("Patched magic database: #{patch}")
+            Mix.shell().info("Majic: Patched magic database: #{patch}")
             {patch, :ok}
 
           {error, code} ->
-            Mix.shell().error("Failed to apply patch #{patch} (#{code})")
+            Mix.shell().error("Majic: Failed to apply patch #{patch} (#{code})")
             Mix.shell().error(error)
             {patch, {:error, error}}
         end
@@ -123,6 +129,18 @@ defmodule Mix.Tasks.Compile.Majic do
       File.cp!(Path.join(@magdir, file), Path.join(@build_magdir, file))
     end)
 
+    :ok
+  end
+
+  defp assemble_magic(destination) do
+    contents =
+      File.ls!(@build_magdir)
+      |> Enum.reduce(<<>>, fn file, acc ->
+        content = File.read!(Path.join(@build_magdir, file))
+        <<acc::binary, content::binary>>
+      end)
+
+    File.write!(destination, contents)
     :ok
   end
 end

@@ -10,7 +10,6 @@ defmodule Majic.Server do
   alias Majic.Server.Data
   alias Majic.Server.Status
   import Kernel, except: [send: 2]
-  @database_patterns [:default]
   @process_timeout Majic.Config.default_process_timeout()
 
   @typedoc """
@@ -230,11 +229,14 @@ defmodule Majic.Server do
   @doc false
   def loading(:enter, _old_state, data) do
     databases =
-      Enum.flat_map(List.wrap(data.database_patterns || @database_patterns), fn
-        :default -> [:default]
-        :system -> [:system]
-        pattern -> Path.wildcard(pattern)
-      end)
+      Enum.flat_map(
+        List.wrap(data.database_patterns || [Majic.Application.get_default_database()]),
+        fn
+          :default -> [:default]
+          :system -> [:system]
+          pattern -> Path.wildcard(pattern)
+        end
+      )
 
     if databases == [] do
       {:stop, {:error, :no_databases_to_load}, data}

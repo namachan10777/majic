@@ -38,39 +38,41 @@ defmodule Majic do
 
   @doc "Compiles a `magic` file or a `Magdir` directory to a magic-compiled database (`.mgc`)"
   def compile(path, timeout \\ 5_000) do
-    port =
-      Port.open(Majic.Config.get_port_name(), [
-        :use_stdio,
-        :binary,
-        :exit_status,
-        {:packet, 2},
-        {:args, []}
-      ])
+    compile = fn port ->
+      send(port, {self(), {:command, :erlang.term_to_binary({:compile_database, path})}})
 
-    compile(port, path, timeout)
+      receive do
+        {^port, {:data, data}} ->
+          :erlang.binary_to_term(data)
+      after
+        timeout ->
+          {:error, :timeout}
+      end
+    end
+
+    with_port(compile, timeout)
   end
 
-  defp compile(port, path, timeout) do
-    receive do
-      {^port, {:data, data}} ->
-        case :erlang.binary_to_term(data) do
-          :ready ->
-            send(port, {self(), {:command, :erlang.term_to_binary({:compile_database, path})}})
+  @doc "Checks whenever a database is valid and can be loaded on the current system."
+  def valid_database?(path, timeout \\ 5_000) do
+    valid = fn port ->
+      send(port, {self(), {:command, :erlang.term_to_binary({:add_database, path})}})
 
-            receive do
-              {^port, {:data, data}} ->
-                :erlang.binary_to_term(data)
-            after
-              timeout ->
-                {:error, :timeout}
-            end
+      receive do
+        {^port, {:data, data}} ->
+          :erlang.binary_to_term(data)
+      after
+        timeout ->
+          {:error, :timeout}
+      end
+    end
 
-          result ->
-            result
-        end
-    after
-      timeout ->
-        {:error, :timeout}
+    case with_port(valid, timeout) do
+      {:ok, _} ->
+        true
+
+      _ ->
+        false
     end
   end
 
@@ -85,5 +87,33 @@ defmodule Majic do
 
   defp do_perform({Pool = mod, name}, path, opts) do
     mod.perform(name, path, opts)
+  end
+
+  defp with_port(fun, timeout) do
+    port =
+      Port.open(Majic.Config.get_port_name(), [
+        :use_stdio,
+        :binary,
+        :exit_status,
+        {:packet, 2},
+        {:args, []}
+      ])
+
+    with_port(port, fun, timeout)
+  end
+
+  defp with_port(port, fun, timeout) do
+    receive do
+      {^port, {:data, data}} ->
+        case :erlang.binary_to_term(data) do
+          :ready ->
+            fun.(port)
+        end
+    after
+      timeout ->
+        {:error, :startup_timeout}
+    end
+  after
+    Port.close(port)
   end
 end
