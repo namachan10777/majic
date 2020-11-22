@@ -51,7 +51,7 @@ defmodule Majic.MixProject do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:elixir_make, "~> 0.6.1", runtime: false},
       {:libfile,
-       github: "file/file", branch: "master", app: false, compile: false, sparse: "magic/"}
+       github: "file/file", branch: "master", app: false, compile: false, runtime: false, sparse: "magic/"}
     ]
   end
 
