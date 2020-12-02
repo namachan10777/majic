@@ -91,13 +91,7 @@ defmodule Majic do
 
   defp with_port(fun, timeout) do
     port =
-      Port.open(Majic.Config.get_port_name(), [
-        :use_stdio,
-        :binary,
-        :exit_status,
-        {:packet, 2},
-        {:args, []}
-      ])
+      Port.open(Majic.Config.get_port_name(), Majic.Config.get_port_options(nil))
 
     with_port(port, fun, timeout)
   end

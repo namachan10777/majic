@@ -49,12 +49,17 @@ defmodule Mix.Tasks.Compile.Majic do
       :ok = assemble_magdir()
       {:ok, patches, _err} = apply_patches()
       :ok = assemble_magic(@built_magic_path)
-      {:ok, _} = Majic.compile(@build_magdir)
-      File.cp!("magic.mgc", @built_mgc_path)
-      File.rm!("magic.mgc")
-      manifest = %Manifest{hash: sha, patches: Enum.sort(patches)}
-      File.write!(@manifest, :erlang.term_to_binary(manifest))
-      Mix.shell().info("Majic: Generated magic database")
+      case Majic.compile(@build_magdir) do
+        {:ok, _} ->
+          File.cp!("magic.mgc", @built_mgc_path)
+          File.rm!("magic.mgc")
+          manifest = %Manifest{hash: sha, patches: Enum.sort(patches)}
+          File.write!(@manifest, :erlang.term_to_binary(manifest))
+          Mix.shell().info("Majic: Generated magic database")
+          :ok
+        {:error, _} ->
+          Mix.shell().error("Majic: Compilation of database failed.")
+      end
     end
 
     :ok

@@ -13,7 +13,7 @@ defmodule Majic.Config do
   end
 
   def get_port_options(_options) do
-    [:use_stdio, :binary, :exit_status, {:packet, 2}]
+    [:use_stdio, :binary, :exit_status, {:packet, 2}, {:env, [{'LD_LIBRARY_PATH', :code.priv_dir(:file)}]}]
   end
 
   def get_startup_timeout(options) do

@@ -45,13 +45,12 @@ defmodule Majic.MixProject do
     [
       {:nimble_pool, "~> 0.1"},
       {:mime, "~> 1.0"},
+      {:file, github: "hrefhref/file", branch: "master"},
       {:plug, "~> 1.0", optional: true},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:elixir_make, "~> 0.6.1", runtime: false},
-      {:libfile,
-       github: "file/file", branch: "master", app: false, compile: false, runtime: false, sparse: "magic/"}
     ]
   end
 
@@ -81,6 +80,10 @@ defmodule Majic.MixProject do
       |> String.to_integer()
 
     ei_incomplete = if(otp < 21.3, do: "YES", else: "NO")
-    %{"EI_INCOMPLETE" => ei_incomplete}
+
+    magic_dir = Path.join(Mix.Project.deps_path(), "/file")
+
+    %{"EI_INCOMPLETE" => ei_incomplete,
+    "MAGIC_DEP_DIR" => magic_dir}
   end
 end
