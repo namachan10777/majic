@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Compile.Majic do
   use Mix.Task.Compiler
-  @repo_path Path.join(Mix.Project.deps_path(), "libfile")
+  @repo_path Path.join(Mix.Project.deps_path(), "file")
   @build_path Path.join(Mix.Project.build_path(), "/majic")
   @manifest Path.join(Mix.Project.manifest_path(), "/compile.majic")
   @patch_path "src/magic_patches"
