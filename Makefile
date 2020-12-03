@@ -5,7 +5,7 @@ MAGIC_HEADER = $(MAGIC_INCLUDE_DIR)/magic.h
 MAGIC_LIB = $(MAGIC_LIBDIR)/libmagic.so
 CPPFLAGS += -I$(ERL_EI_INCLUDE_DIR) -I$(MAGIC_INCLUDE_DIR)
 LDFLAGS += -L$(ERL_EI_LIBDIR) -L$(MAGIC_LIBDIR)
-LDLIBS = -lpthread -lei -lm -lmagic
+LDLIBS = -lpthread
 PRIV = priv/
 RM = rm -Rf
 
@@ -13,6 +13,9 @@ ifeq ($(EI_INCOMPLETE),YES)
   LDLIBS += -lerl_interface
   CFLAGS += -DEI_INCOMPLETE
 endif
+
+LDLIBS += -lei -lm -lmagic
+
 
 all: priv/libmagic_port
 
