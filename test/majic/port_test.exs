@@ -11,8 +11,7 @@ defmodule Majic.PortTest do
   end
 
   test "errors with non existent database with an error" do
-    opts = [:use_stdio, :binary, :exit_status, {:packet, 2}, {:args, []}]
-    port = Port.open(Majic.Config.get_port_name(), opts)
+    port = Port.open(Majic.Config.get_port_name(), Majic.Config.get_port_options([]))
     on_exit(fn -> send(port, {self(), :close}) end)
     assert_ready(port)
 
@@ -26,14 +25,13 @@ defmodule Majic.PortTest do
   end
 
   test "loads default database" do
-    opts = [:use_stdio, :binary, :exit_status, {:packet, 2}, {:args, []}]
-    port = Port.open(Majic.Config.get_port_name(), opts)
+    port = Port.open(Majic.Config.get_port_name(), Majic.Config.get_port_options([]))
     on_exit(fn -> send(port, {self(), :close}) end)
     assert_ready(port)
 
     send(
       port,
-      {self(), {:command, :erlang.term_to_binary({:add_database, :default})}}
+      {self(), {:command, :erlang.term_to_binary({:add_database, Majic.Application.get_default_database()})}}
     )
 
     assert_receive {^port, {:data, data}}
@@ -41,8 +39,7 @@ defmodule Majic.PortTest do
   end
 
   test "reloads" do
-    opts = [:use_stdio, :binary, :exit_status, {:packet, 2}, {:args, []}]
-    port = Port.open(Majic.Config.get_port_name(), opts)
+    port = Port.open(Majic.Config.get_port_name(), Majic.Config.get_port_options([]))
     on_exit(fn -> send(port, {self(), :close}) end)
     assert_ready_and_init_default(port)
 
@@ -52,8 +49,7 @@ defmodule Majic.PortTest do
   end
 
   test "errors when no database loaded" do
-    opts = [:use_stdio, :binary, :exit_status, {:packet, 2}, {:args, []}]
-    port = Port.open(Majic.Config.get_port_name(), opts)
+    port = Port.open(Majic.Config.get_port_name(), Majic.Config.get_port_options([]))
     on_exit(fn -> send(port, {self(), :close}) end)
     assert_ready(port)
 
@@ -180,7 +176,7 @@ defmodule Majic.PortTest do
   def assert_ready_and_init_default(port) do
     assert_receive {^port, {:data, data}}
     assert :ready == :erlang.binary_to_term(data)
-    send(port, {self(), {:command, :erlang.term_to_binary({:add_database, :default})}})
+    send(port, {self(), {:command, :erlang.term_to_binary({:add_database, Majic.Application.get_default_database()})}})
     assert_receive {^port, {:data, data}}
     assert {:ok, _} = :erlang.binary_to_term(data)
   end

@@ -304,7 +304,7 @@ defmodule Majic.Server do
 
   @doc false
   def available({:call, from}, {:perform, path}, data) do
-    data = %{data | cycles: data.cycles + 1, request: {path, from, :erlang.now()}}
+    data = %{data | cycles: data.cycles + 1, request: {path, from, :erlang.timestamp()}}
 
     arg =
       case path do

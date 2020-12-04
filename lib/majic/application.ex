@@ -21,7 +21,7 @@ defmodule Majic.Application do
   end
 
   defp valid_database?(true) do
-    set_default_database(:default)
+    set_default_database(database())
     {:ok, self()}
   end
 
@@ -31,17 +31,20 @@ defmodule Majic.Application do
 
   defp built_database?(:ok) do
     Logger.info("Majic: rebuilt magic database")
-    set_default_database(:default)
+    set_default_database(database())
     {:ok, self()}
   end
 
   defp built_database?(_error) do
     Logger.error(
-      "Majic: Could not build magic database, using system one: file identification may be outdated."
+      "Majic: Could not use magic database."
     )
 
-    set_default_database(:system)
-    {:ok, self()}
+    {:error, :no_magic_database}
+  end
+
+  defp database do
+    priv("/magic.mgc")
   end
 
   defp set_default_database(default) do
